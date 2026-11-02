@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  NOTE: This file is NOT a SwiftPM resource.
+  When creating the Xcode app target, add NSCameraUsageDescription to its Info.plist.
+  The entry below is the required value.
+-->
+<plist version="1.0">
+<dict>
+    <key>NSCameraUsageDescription</key>
+    <string>MySyncPhotos uses the rear camera to take photos that are synced across your devices.</string>
+</dict>
+</plist>

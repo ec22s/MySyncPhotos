@@ -1,0 +1,9 @@
+# Per-developer signing settings
+Signing.local.xcconfig
+
+# Build output / user state
+.build/
+.swiftpm/
+xcuserdata/
+DerivedData/
+.DS_Store

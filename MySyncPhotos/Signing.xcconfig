@@ -1,0 +1,11 @@
+// Shared signing configuration (safe to commit).
+//
+// Per-developer values live in Signing.local.xcconfig, which is git-ignored.
+// Create it next to this file with your Apple Developer Team ID:
+//
+//     DEVELOPMENT_TEAM = ABCDE12345
+//
+// Because this is an xcconfig, regenerating the project with `xcodegen generate`
+// keeps your Team instead of resetting it.
+
+#include? "Signing.local.xcconfig"

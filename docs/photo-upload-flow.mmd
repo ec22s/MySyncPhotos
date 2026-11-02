@@ -1,0 +1,50 @@
+sequenceDiagram
+    autonumber
+    participant A as iPad (uploader)
+    participant API as API Gateway REST
+    participant L as Lambda handler
+    participant C as photoChunks table
+    participant P as photos table (feed)
+    participant WS as API Gateway WebSocket
+    participant B as iPhone (viewer)
+
+    Note over B,WS: App in foreground → live subscription
+    B->>API: getFeedChannel()
+    API->>L: invoke
+    L-->>B: { channel, wsUrl, token, connectToken }
+    B->>WS: connect wsUrl?token=connectToken
+    B->>WS: {"action":"subscribe", channel, token}
+    WS-->>B: subscribe_success
+    B->>API: listRecentPhotos(limit, knownPhotoIds)  (catch-up sync)
+
+    Note over A: Capture → resize ≤2048 px → JPEG ≤640 KiB<br/>saved to on-disk queue first (offline-safe)
+    A->>A: Base64 → split into ≤380,000-byte chunks (≤3)
+    loop each chunk (parallel, 3 retries)
+        A->>API: putChunk(photoId, i, n, data, createdAt, deviceId)
+        API->>L: invoke
+        L->>C: put item
+    end
+    A->>API: putPhoto(photoId, n, createdAt, deviceId, thumbnail)
+    API->>L: invoke
+    L->>P: put feed entry (only after all chunks)
+    L->>WS: publish {photoId, createdAt} to feed/all
+    WS-->>B: {"type":"message", data:{photoId, createdAt}}
+    Note over A: queue file deleted → status "synced"
+
+    B->>API: listRecentPhotos(limit, knownPhotoIds)
+    API->>L: invoke
+    L->>P: query GSI feed-createdAt (desc)
+    L-->>B: newest photos (thumbnails only for unknown ids)
+    Note over B: Grid updates without pull-to-refresh
+
+    opt User taps the photo (lazy full-size load)
+        B->>API: getPhotoChunks(photoId)
+        API->>L: invoke
+        L->>C: query PK photoId
+        L-->>B: chunks ordered by chunkIndex
+        B->>B: join → Base64 decode → UIImage
+    end
+
+    loop every 5 min while connected
+        B->>WS: {"action":"ping"}  (idle timeout 10 min, subscription TTL ~1 h)
+    end

@@ -1,0 +1,343 @@
+{
+	"openrpc": "1.3.2",
+	"info": {
+		"title": "api",
+		"version": "1.0.0"
+	},
+	"methods": [
+		{
+			"name": "api.getFeedChannel",
+			"params": [],
+			"result": {
+				"name": "GetFeedChannelResult",
+				"schema": {
+					"x-blocks-transferable": "realtime/channel",
+					"x-blocks-type-args": [
+						{
+							"type": "object",
+							"properties": {
+								"photoId": {
+									"type": "string"
+								},
+								"createdAt": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"photoId",
+								"createdAt"
+							]
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "api.getPhotoChunks",
+			"params": [
+				{
+					"name": "photoId",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				}
+			],
+			"result": {
+				"name": "GetPhotoChunksResult",
+				"schema": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"photoId": {
+								"type": "string"
+							},
+							"chunkIndex": {
+								"type": "number"
+							},
+							"totalChunks": {
+								"type": "number"
+							},
+							"chunkData": {
+								"type": "string"
+							},
+							"createdAt": {
+								"type": "string"
+							},
+							"deviceId": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"photoId",
+							"chunkIndex",
+							"totalChunks",
+							"chunkData",
+							"createdAt",
+							"deviceId"
+						]
+					}
+				}
+			}
+		},
+		{
+			"name": "api.getUploadedChunkIndices",
+			"params": [
+				{
+					"name": "photoId",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				}
+			],
+			"result": {
+				"name": "GetUploadedChunkIndicesResult",
+				"schema": {
+					"type": "array",
+					"items": {
+						"type": "number"
+					}
+				}
+			}
+		},
+		{
+			"name": "api.listRecentPhotos",
+			"params": [
+				{
+					"name": "limit",
+					"required": true,
+					"schema": {
+						"type": "number"
+					}
+				},
+				{
+					"name": "knownPhotoIds",
+					"required": true,
+					"schema": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				}
+			],
+			"result": {
+				"name": "ListRecentPhotosResult",
+				"schema": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"photoId": {
+								"type": "string"
+							},
+							"totalChunks": {
+								"type": "number"
+							},
+							"createdAt": {
+								"type": "string"
+							},
+							"deviceId": {
+								"type": "string"
+							},
+							"thumbnail": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"photoId",
+							"totalChunks",
+							"createdAt",
+							"deviceId",
+							"thumbnail"
+						]
+					}
+				}
+			}
+		},
+		{
+			"name": "api.putChunk",
+			"params": [
+				{
+					"name": "photoId",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				},
+				{
+					"name": "chunkIndex",
+					"required": true,
+					"schema": {
+						"type": "number"
+					}
+				},
+				{
+					"name": "totalChunks",
+					"required": true,
+					"schema": {
+						"type": "number"
+					}
+				},
+				{
+					"name": "chunkData",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				},
+				{
+					"name": "createdAt",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				},
+				{
+					"name": "deviceId",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				}
+			],
+			"result": {
+				"name": "PutChunkResult",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"success": {
+							"type": "boolean"
+						}
+					},
+					"required": [
+						"success"
+					]
+				}
+			}
+		},
+		{
+			"name": "api.putChunks",
+			"params": [
+				{
+					"name": "chunks",
+					"required": true,
+					"schema": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"photoId": {
+									"type": "string"
+								},
+								"chunkIndex": {
+									"type": "number"
+								},
+								"totalChunks": {
+									"type": "number"
+								},
+								"chunkData": {
+									"type": "string"
+								},
+								"createdAt": {
+									"type": "string"
+								},
+								"deviceId": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"photoId",
+								"chunkIndex",
+								"totalChunks",
+								"chunkData",
+								"createdAt",
+								"deviceId"
+							]
+						}
+					}
+				}
+			],
+			"result": {
+				"name": "PutChunksResult",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"success": {
+							"type": "boolean"
+						},
+						"count": {
+							"type": "number"
+						}
+					},
+					"required": [
+						"success",
+						"count"
+					]
+				}
+			}
+		},
+		{
+			"name": "api.putPhoto",
+			"params": [
+				{
+					"name": "photoId",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				},
+				{
+					"name": "totalChunks",
+					"required": true,
+					"schema": {
+						"type": "number"
+					}
+				},
+				{
+					"name": "createdAt",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				},
+				{
+					"name": "deviceId",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				},
+				{
+					"name": "thumbnail",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				}
+			],
+			"result": {
+				"name": "PutPhotoResult",
+				"schema": {
+					"type": "object",
+					"properties": {
+						"success": {
+							"type": "boolean"
+						}
+					},
+					"required": [
+						"success"
+					]
+				}
+			}
+		}
+	],
+	"servers": [
+		{
+			"name": "local",
+			"url": "http://localhost:3000/aws-blocks/api"
+		}
+	]
+}

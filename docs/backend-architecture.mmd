@@ -1,0 +1,49 @@
+flowchart LR
+    subgraph Clients["iOS devices (no login)"]
+        A1["MySyncPhotos app<br/>iPad / iPhone"]
+    end
+
+    subgraph AWS["AWS account ************ · ap-northeast-1 · stack mysyncphotos-***-******-prod"]
+        direction LR
+
+        subgraph Edge["API Gateway (throttled 20 req/s, burst 40)"]
+            REST["REST API · stage prod<br/>POST /prod/aws-blocks/api<br/>JSON-RPC"]
+            WS["WebSocket API · stage rt<br/>$connect · $default · $disconnect<br/>connect requires ?token="]
+        end
+
+        L["Lambda: app handler<br/>Node.js 24 · arm64 · 2048 MB<br/>ApiNamespace 'api' + Realtime 'live'"]
+
+        subgraph Data["DynamoDB (on-demand · deleted with stack)"]
+            T1[("photoChunks<br/>PK photoId · SK chunkIndex<br/>≤ 3 chunks of Base64 JPEG")]
+            T2[("photos (shared feed)<br/>PK photoId<br/>GSI feed-createdAt<br/>metadata + thumbnail")]
+            T3[("live connections<br/>PK connectionId · SK channel<br/>GSI channel-index · TTL")]
+        end
+
+        SSM["SSM SecureString<br/>realtime token secret"]
+        CW["CloudWatch Logs<br/>7-day retention"]
+
+        subgraph Support["Deploy-time / support (idle cost ≈ 0)"]
+            GSI["GSI manager<br/>Lambdas + Step Functions waiter"]
+            CFG["S3 config bucket<br/>private"]
+            SEC["Secret init Lambda"]
+        end
+    end
+
+    BOOT["CDKToolkit bootstrap stack<br/>(staging bucket, ECR, deploy roles)"]
+
+    A1 -- "HTTPS JSON-RPC<br/>putChunk · putPhoto · listRecentPhotos<br/>getPhotoChunks · getFeedChannel" --> REST
+    A1 <-- "WSS subscribe · ping<br/>push: new photo event" --> WS
+
+    REST --> L
+    WS --> L
+    L -- "PostToConnection<br/>(fan-out event)" --> WS
+
+    L --> T1
+    L --> T2
+    L --> T3
+    L -. "mint / validate tokens" .-> SSM
+    L -. logs .-> CW
+
+    GSI -. "creates indexes" .-> Data
+    SEC -. "creates secret" .-> SSM
+    BOOT -. "used by cdk deploy" .-> AWS

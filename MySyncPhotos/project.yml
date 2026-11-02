@@ -1,0 +1,103 @@
+name: MySyncPhotos
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "16.0"
+  swiftVersion: "5.0"
+  createIntermediateGroups: true
+  # Prevent xcodegen from also generating a scheme for the local package itself
+  generateEmptyDirectories: false
+
+configFiles:
+  Debug: Signing.xcconfig
+  Release: Signing.xcconfig
+
+packages:
+  aws-blocks-swift:
+    path: .   # local Package.swift in the same directory
+
+targets:
+  MySyncPhotos:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: Sources/MySyncPhotos
+        excludes:
+          - "**/.DS_Store"
+          - "**/Info.plist"   # not a source file; INFOPLIST_FILE points to MySyncPhotos-Info.plist
+          - "blocks.spec.json" # codegen is pre-run; not needed as a build input
+    info:
+      path: MySyncPhotos-Info.plist
+      properties:
+        CFBundleName: MySyncPhotos
+        CFBundleDisplayName: MySyncPhotos
+        CFBundleVersion: "1"
+        CFBundleShortVersionString: "1.0"
+        LSRequiresIPhoneOS: true
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSCameraUsageDescription: MySyncPhotos uses the rear camera to take photos that are synced across your devices.
+    dependencies:
+      - package: aws-blocks-swift
+        product: BlocksRuntime
+    settings:
+      base:
+        SWIFT_VERSION: "5.0"
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "Apple Development"
+        # DEVELOPMENT_TEAM comes from Signing.xcconfig / Signing.local.xcconfig so that
+        # `xcodegen generate` never wipes the Team selected for device builds.
+        TARGETED_DEVICE_FAMILY: "1,2" # iPhone + iPad
+        SUPPORTS_MACCATALYST: "NO"
+        ENABLE_PREVIEWS: "YES"
+      configs:
+        Debug:
+          SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+          MTL_ENABLE_DEBUG_INFO: INCLUDE_SOURCE
+          ONLY_ACTIVE_ARCH: "YES"
+          DEBUG_INFORMATION_FORMAT: dwarf
+        Release:
+          SWIFT_OPTIMIZATION_LEVEL: "-Owholemodule"
+          VALIDATE_PRODUCT: "YES"
+          DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+          COPY_PHASE_STRIP: "NO"
+
+  # Unit tests (Swift Testing). Hosted in the app so UIKit-based tests can run.
+  MySyncPhotosTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: Tests/MySyncPhotosTests
+    dependencies:
+      - target: MySyncPhotos
+    settings:
+      base:
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: "YES"
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.MySyncPhotosTests
+
+schemes:
+  MySyncPhotos:
+    build:
+      targets:
+        MySyncPhotos: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - MySyncPhotosTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
